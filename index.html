@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Datos desde Google Sheets</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Tabletop.js/1.5.4/tabletop.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 1rem; }
     table { border-collapse: collapse; width: 100%; }
@@ -14,44 +13,52 @@
 <body>
   <h1>Datos del prototipo</h1>
   <div id="loading">Cargando datos…</div>
-  <table id="dataTable" style="display:none"></table>
+  <table id="dataTable" style="display: none;"></table>
 
   <script>
-    const publicSpreadsheetUrl =
-      'https://docs.google.com/spreadsheets/d/e/2PACX-1vSX9IUrV8oHTcY0xLufvuQEYb1EuwnJvF5pHHM5KnK46dQrmvfuSZsnzLHUyud0OmEyjSfbEFGrSjcj/pubhtml';
+    const sheetId = '2PACX-1vSX9IUrV8oHTcY0xLufvuQEYb1EuwnJvF5pHHM5KnK46dQrmvfuSZsnzLHUyud0OmEyjSfbEFGrSjcj';
+    const gid = '0'; // Pestaña 1 usualmente tiene gid = 0
 
-    function showInfo(data) {
-      document.getElementById('loading').style.display = 'none';
-      const table = document.getElementById("dataTable");
-      table.style.display = '';
-      table.innerHTML = "";
-      const headers = Object.keys(data[0]);
+    const query = new google.visualization.Query(
+      `https://docs.google.com/spreadsheets/d/e/${sheetId}/gviz/tq?gid=${gid}`
+    );
+
+    query.send(response => {
+      if (response.isError()) {
+        document.getElementById('loading').innerText = 'Error al cargar los datos.';
+        console.error(response.getMessage(), response.getDetailedMessage());
+        return;
+      }
+
+      const data = response.getDataTable();
+      const numRows = data.getNumberOfRows();
+      const numCols = data.getNumberOfColumns();
+
+      const table = document.getElementById('dataTable');
       const headerRow = table.insertRow();
-      headers.forEach(h => {
-        const th = document.createElement("th");
-        th.innerText = h;
+      for (let col = 0; col < numCols; col++) {
+        const th = document.createElement('th');
+        th.innerText = data.getColumnLabel(col);
         headerRow.appendChild(th);
-      });
-      data.forEach(row => {
-        const tr = table.insertRow();
-        headers.forEach(h => {
-          const td = tr.insertCell();
-          td.innerText = row[h];
-        });
-      });
-    }
+      }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      Tabletop.init({
-        key: publicSpreadsheetUrl,
-        callback: showInfo,
-        simpleSheet: true,
-        error: err => {
-          document.getElementById('loading').innerText =
-            'Error cargando datos: ' + err;
-          console.error(err);
+      for (let row = 0; row < numRows; row++) {
+        const tr = table.insertRow();
+        for (let col = 0; col < numCols; col++) {
+          const td = tr.insertCell();
+          td.innerText = data.getValue(row, col);
         }
-      });
+      }
+
+      document.getElementById('loading').style.display = 'none';
+      table.style.display = '';
+    });
+  </script>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <script>
+    google.charts.load('current', {packages: ['corechart']});
+    google.charts.setOnLoadCallback(() => {
+      console.log('Google Visualization API lista');
     });
   </script>
 </body>
