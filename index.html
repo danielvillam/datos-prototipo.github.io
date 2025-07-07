@@ -13,25 +13,25 @@
 </head>
 <body>
   <h1>Datos del prototipo</h1>
-  <table id="dataTable"></table>
+  <div id="loading">Cargando datos…</div>
+  <table id="dataTable" style="display:none"></table>
 
   <script>
-    const sheetID = '1oo-gispWDBzsTeiMS6lo4UUWmMvAcRv39Qa9rv3wkio';
     const publicSpreadsheetUrl =
-      `https://docs.google.com/spreadsheets/d/${sheetID}/pubhtml`;
+      'https://docs.google.com/spreadsheets/d/e/2PACX-1vSX9IUrV8oHTcY0xLufvuQEYb1EuwnJvF5pHHM5KnK46dQrmvfuSZsnzLHUyud0OmEyjSfbEFGrSjcj/pubhtml';
 
     function showInfo(data) {
+      document.getElementById('loading').style.display = 'none';
       const table = document.getElementById("dataTable");
+      table.style.display = '';
       table.innerHTML = "";
       const headers = Object.keys(data[0]);
-      // fila de cabecera
       const headerRow = table.insertRow();
       headers.forEach(h => {
         const th = document.createElement("th");
         th.innerText = h;
         headerRow.appendChild(th);
       });
-      // filas de datos
       data.forEach(row => {
         const tr = table.insertRow();
         headers.forEach(h => {
@@ -45,7 +45,12 @@
       Tabletop.init({
         key: publicSpreadsheetUrl,
         callback: showInfo,
-        simpleSheet: true
+        simpleSheet: true,
+        error: err => {
+          document.getElementById('loading').innerText =
+            'Error cargando datos: ' + err;
+          console.error(err);
+        }
       });
     });
   </script>
