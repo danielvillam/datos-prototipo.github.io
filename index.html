@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Datos desde Google Sheets</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Tabletop.js/1.5.4/tabletop.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: .5rem; text-align: left; }
+    th { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <h1>Datos del prototipo</h1>
+  <table id="dataTable"></table>
+
+  <script>
+    const sheetID = '1oo-gispWDBzsTeiMS6lo4UUWmMvAcRv39Qa9rv3wkio';
+    const publicSpreadsheetUrl =
+      `https://docs.google.com/spreadsheets/d/${sheetID}/pubhtml`;
+
+    function showInfo(data) {
+      const table = document.getElementById("dataTable");
+      table.innerHTML = "";
+      const headers = Object.keys(data[0]);
+      // fila de cabecera
+      const headerRow = table.insertRow();
+      headers.forEach(h => {
+        const th = document.createElement("th");
+        th.innerText = h;
+        headerRow.appendChild(th);
+      });
+      // filas de datos
+      data.forEach(row => {
+        const tr = table.insertRow();
+        headers.forEach(h => {
+          const td = tr.insertCell();
+          td.innerText = row[h];
+        });
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      Tabletop.init({
+        key: publicSpreadsheetUrl,
+        callback: showInfo,
+        simpleSheet: true
+      });
+    });
+  </script>
+</body>
+</html>
